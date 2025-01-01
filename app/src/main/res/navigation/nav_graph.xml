@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/movieFragment">
+
+    <fragment
+        android:id="@+id/detailFragment"
+        android:name="com.shubham.movie_mania_upgrade.ui.details.DetailFragment"
+        android:label="fragment_movie"
+        tools:layout="@layout/fragment_movie" >
+        <action
+            android:id="@+id/action_detailFragment_to_movieFragment"
+            app:destination="@id/movieFragment"
+            app:popUpTo="@id/movieFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+    <fragment
+        android:id="@+id/movieFragment"
+        android:name="com.shubham.movie_mania_upgrade.ui.movie.MovieFragment"
+        android:label="fragment_movie2"
+        tools:layout="@layout/fragment_movie2" >
+        <action
+            android:id="@+id/action_movieFragment_to_detailFragment"
+            app:destination="@id/detailFragment" />
+        <action
+            android:id="@+id/action_movieFragment_to_detailFragment2"
+            app:destination="@id/detailFragment" />
+    </fragment>
+</navigation>

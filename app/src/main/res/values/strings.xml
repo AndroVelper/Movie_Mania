@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">movie_mania_upgrade</string>
+    <string name="movie_image_content_description">movie poster</string>
+    <string name="search_movie_here">search movie here</string>
+</resources>
