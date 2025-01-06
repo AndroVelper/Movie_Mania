@@ -1,17 +1,17 @@
 package com.shubham.lib_permission.permissionManager
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.view.LayoutInflater
+import android.view.WindowManager
+import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
-import androidx.viewbinding.ViewBinding
 import com.shubham.lib_permission.communicator.IPermissionCallbackProvider
 import com.shubham.lib_permission.databinding.ItemDialogPermissionBinding
 
@@ -34,8 +34,8 @@ class PermissionManager() {
      * @see IPermissionCallbackProvider.onPermissionDenied for the callback for the permission denied.
      * @see IPermissionCallbackProvider.requestForPermission when you want to show the custom Dialog for the permission for displaying the information before requesting the permission
      * **/
-    constructor(listener: IPermissionCallbackProvider) : this() {
-        permissionCallback = listener
+    fun setListener(listener: IPermissionCallbackProvider) {
+        this.permissionCallback = listener
     }
 
 
@@ -79,39 +79,38 @@ class PermissionManager() {
      *  @return return true when the permission is granted otherWise false.
      *  **/
 
-    fun  requestPermission(
+    fun requestPermission(
         activity: Activity,
         context: Context,
         permissionDialogHeading: String?,
         permissionName: String,
         permissionMessage: String?,
-        requestCode: Int = 1000
+        requestCode: Int = 1000,
+        launcher: ActivityResultLauncher<String>? = null
     ): Boolean {
         return when {
+            // Permission is already granted
             checkIsPermissionGranted(context, permissionName) -> {
-                permissionCallback?.let { permissionCallback?.onPermissionGranted() } ?: true
+                permissionCallback?.onPermissionGranted() ?: true
                 true
             }
 
-            checkCanWeShowRationale(activity, permissionName) -> {
-                permissionCallback?.let {
-                    permissionCallback?.requestForPermission()
-                }
-                    ?: requestForPermission(activity, permissionName, requestCode = requestCode)
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                activity,
+                permissionName
+            ) -> {
+                showRationaleAndRequestPermission(context, permissionMessage, permissionName)
                 false
             }
 
             else -> {
-                permissionCallback?.let { permissionCallback?.onPermissionDenied() }
-                    ?: showRationaleAndRequestPermission(
-                        context,
-                        permissionMessage,
-                        permissionDialogHeading
-                    )
+                requestForPermission(activity, permissionString = permissionName, requestCode)
+                permissionCallback?.onPermissionDenied()
                 false
             }
         }
     }
+
 
     /**
      * Just override the permission using the @see onRequestPermissionsResult method
@@ -137,10 +136,16 @@ class PermissionManager() {
     ) {
         val alertDialog = Dialog(context)
         val dialogBinding: ItemDialogPermissionBinding = ItemDialogPermissionBinding.inflate(
-            LayoutInflater.from(context)
-        )
+            LayoutInflater.from(context) , null , false)
         alertDialog.setContentView(dialogBinding.root)
         alertDialog.setCancelable(false)
+        val window = alertDialog.window
+        window?.setLayout(
+            (context.resources.displayMetrics.widthPixels * 0.9).toInt(), // 90% of screen width
+            WindowManager.LayoutParams.WRAP_CONTENT
+        )
+        alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
         permissionMessage?.let {
             dialogBinding.permissionDescription.text = it
         }
@@ -151,6 +156,7 @@ class PermissionManager() {
             openSettings(context)
         }
         dialogBinding.cancelButton.setOnClickListener {
+            permissionCallback?.onPermissionDenied()
             alertDialog.dismiss()
         }
         alertDialog.setOnDismissListener {
@@ -169,7 +175,6 @@ class PermissionManager() {
         }
         context.startActivity(settingIntent)
     }
-
 
 
 }

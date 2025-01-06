@@ -1,5 +1,6 @@
 package com.shubham.movie_mania_upgrade.di
 
+import com.shubham.lib_permission.permissionManager.PermissionManager
 import com.shubham.movie_mania_upgrade.remote.IMovieImplementor
 import com.shubham.movie_mania_upgrade.remote.MovieRepository
 import com.shubham.movie_mania_upgrade.utils.Constants
@@ -49,6 +50,11 @@ object HiltModule {
     @Provides
     fun provideRepositoryInstance(): MovieRepository {
         return MovieRepository(provideMovieRetrofitInstance())
+    }
+
+    @Provides
+    fun permissionManager(): PermissionManager{
+        return PermissionManager()
     }
 
 

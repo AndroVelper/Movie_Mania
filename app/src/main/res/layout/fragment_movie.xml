@@ -9,13 +9,13 @@
 
     <androidx.cardview.widget.CardView
         android:id="@+id/searchBarParent"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginVertical="@dimen/_10sdp"
         app:cardCornerRadius="@dimen/_5sdp"
         app:cardElevation="@dimen/_2sdp"
         app:layout_constraintBottom_toTopOf="@+id/movieRecycler"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/micAccess"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -30,9 +30,19 @@
             android:hint="@string/search_movie_here"
             android:iconifiedByDefault="false"
             android:imeOptions="actionSearch" />
+
+
     </androidx.cardview.widget.CardView>
 
-
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/micAccess"
+        android:layout_width="@dimen/_40sdp"
+        android:layout_height="@dimen/_30sdp"
+        android:src="@android:drawable/ic_btn_speak_now"
+        app:layout_constraintBottom_toBottomOf="@+id/searchBarParent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/searchBarParent"
+        app:layout_constraintTop_toTopOf="@+id/searchBarParent" />
 
 
     <androidx.recyclerview.widget.RecyclerView
@@ -50,8 +60,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginVertical="@dimen/_2sdp"
-        android:visibility="gone"
         android:progressTint="@color/black"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/searchBarParent"
         app:layout_constraintStart_toStartOf="@id/searchBarParent"

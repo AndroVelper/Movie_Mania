@@ -1,14 +1,20 @@
 package com.shubham.movie_mania_upgrade.ui.movie
 
+import android.Manifest
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.shubham.lib_permission.permissionManager.PermissionManager
 import com.shubham.movie_mania_upgrade.communicator.IItemClickListener
 import com.shubham.movie_mania_upgrade.data.Search
 import com.shubham.movie_mania_upgrade.databinding.FragmentMovieBinding
@@ -22,6 +28,7 @@ import com.shubham.movie_mania_upgrade.utils.runOnBackgroundThread
 import com.shubham.movie_mania_upgrade.utils.showToast
 import com.shubham.movie_mania_upgrade.utils.showView
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -39,6 +46,9 @@ class MovieFragment : Fragment(), IItemClickListener {
         BottomSheetDialog(requireContext())
     }
 
+    @Inject
+    lateinit var permissionManager: PermissionManager
+
     private val viewModel: MainViewModel by viewModels()
 
 
@@ -46,6 +56,15 @@ class MovieFragment : Fragment(), IItemClickListener {
         MovieAdapter(this)
     }
 
+    private var launcherPermission : ActivityResultLauncher<String>? = null
+
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        launcherPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            Log.e("codeChekcing", "onAttach: Codd chck is $isGranted", )
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,7 +77,23 @@ class MovieFragment : Fragment(), IItemClickListener {
         super.onViewCreated(view, savedInstanceState)
         setRecyclerView()
         setUpListeners()
+        setUpClickListeners()
         itemDetailBinding?.root?.let { bottomSheet?.setContentView(it) }
+    }
+
+    private fun setUpClickListeners() {
+        binding?.apply {
+            micAccess.setOnClickListener {
+                permissionManager.requestPermission(
+                    activity = requireActivity(),
+                    context = requireContext(),
+                    permissionDialogHeading = null,
+                    permissionMessage = null,
+                    permissionName = Manifest.permission.RECORD_AUDIO,
+                    launcher = launcherPermission
+                )
+            }
+        }
     }
 
     private fun setRecyclerView() {
@@ -66,6 +101,7 @@ class MovieFragment : Fragment(), IItemClickListener {
             layoutManager = GridLayoutManager(requireContext(), 2)
             adapter = moviePageAdapter
         }
+
     }
 
     private fun setUpListeners() {

@@ -44,7 +44,7 @@ android {
 
 dependencies {
      // libraries additions permission library
-
+    implementation(project(":lib_permission"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
