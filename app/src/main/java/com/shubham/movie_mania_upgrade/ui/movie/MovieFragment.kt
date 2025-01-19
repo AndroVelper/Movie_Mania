@@ -3,7 +3,6 @@ package com.shubham.movie_mania_upgrade.ui.movie
 import android.Manifest
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,8 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.shubham.lib_permission.permissionManager.PermissionManager
+import com.shubham.lib_speechrecognizer.speech.SpeechRecognizerManager
+import com.shubham.lib_speechrecognizer.speech.communicator.ISpeechToTextConvertListener
 import com.shubham.movie_mania_upgrade.communicator.IItemClickListener
 import com.shubham.movie_mania_upgrade.data.Search
 import com.shubham.movie_mania_upgrade.databinding.FragmentMovieBinding
@@ -28,11 +29,12 @@ import com.shubham.movie_mania_upgrade.utils.runOnBackgroundThread
 import com.shubham.movie_mania_upgrade.utils.showToast
 import com.shubham.movie_mania_upgrade.utils.showView
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class MovieFragment : Fragment(), IItemClickListener {
+class MovieFragment : Fragment(), IItemClickListener  {
 
     private val binding: FragmentMovieBinding? by lazy {
         FragmentMovieBinding.inflate(layoutInflater)
@@ -46,8 +48,24 @@ class MovieFragment : Fragment(), IItemClickListener {
         BottomSheetDialog(requireContext())
     }
 
+
     @Inject
     lateinit var permissionManager: PermissionManager
+
+
+    @Inject
+    lateinit var speechRecognizer : SpeechRecognizerManager
+
+
+    private val listener = object : ISpeechToTextConvertListener {
+        override fun speechToTextConverted(text: String) {
+            if(text.trim().isEmpty()){
+                "Please speak again".showToast(requireContext())
+            }
+            binding?.searchBar?.setQuery(text , true)
+        }
+    }
+
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -56,14 +74,15 @@ class MovieFragment : Fragment(), IItemClickListener {
         MovieAdapter(this)
     }
 
-    private var launcherPermission : ActivityResultLauncher<String>? = null
+    private var launcherPermission: ActivityResultLauncher<String>? = null
 
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        launcherPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            Log.e("codeChekcing", "onAttach: Codd chck is $isGranted", )
-        }
+        launcherPermission =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                Timber.e("codeChecking", "onAttach: Codd check is $isGranted")
+            }
     }
 
     override fun onCreateView(
@@ -78,13 +97,14 @@ class MovieFragment : Fragment(), IItemClickListener {
         setRecyclerView()
         setUpListeners()
         setUpClickListeners()
+        speechRecognizer.setListener(listener)
         itemDetailBinding?.root?.let { bottomSheet?.setContentView(it) }
     }
 
     private fun setUpClickListeners() {
         binding?.apply {
             micAccess.setOnClickListener {
-                permissionManager.requestPermission(
+                val permissionResult = permissionManager.requestPermission(
                     activity = requireActivity(),
                     context = requireContext(),
                     permissionDialogHeading = null,
@@ -92,8 +112,26 @@ class MovieFragment : Fragment(), IItemClickListener {
                     permissionName = Manifest.permission.RECORD_AUDIO,
                     launcher = launcherPermission
                 )
+
+                // if the permission is not provided then return and do nothing.
+                if (!permissionResult) {
+                    return@setOnClickListener
+                }
+
+                openMic()
+
             }
         }
+    }
+
+    private fun openMic() {
+        speechRecognizer.startRecognizingSpeech()
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        speechRecognizer.stopRecognizer()
     }
 
     private fun setRecyclerView() {
@@ -156,5 +194,7 @@ class MovieFragment : Fragment(), IItemClickListener {
             viewModel.getTheMovieDetails(data.imdbID)
         }
     }
+
+
 
 }

@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "movie_mania_upgrade"
 include(":app")
 include(":lib_permission")
+include(":lib_speechRecognizer")

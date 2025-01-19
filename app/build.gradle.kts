@@ -45,6 +45,7 @@ android {
 dependencies {
      // libraries additions permission library
     implementation(project(":lib_permission"))
+    implementation(project(":lib_speechRecognizer"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -74,5 +75,7 @@ dependencies {
     implementation(libs.logging.interceptor)
     // splash screen
     implementation(libs.splash.screen)
+    //logger
+    implementation(libs.timber)
 
 }

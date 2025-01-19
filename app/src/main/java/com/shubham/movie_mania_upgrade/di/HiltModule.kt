@@ -1,17 +1,23 @@
 package com.shubham.movie_mania_upgrade.di
 
+import android.content.Context
 import com.shubham.lib_permission.permissionManager.PermissionManager
+import com.shubham.lib_speechrecognizer.speech.SpeechRecognizerManager
+import com.shubham.lib_speechrecognizer.speech.communicator.ISpeechToTextConvertListener
 import com.shubham.movie_mania_upgrade.remote.IMovieImplementor
 import com.shubham.movie_mania_upgrade.remote.MovieRepository
 import com.shubham.movie_mania_upgrade.utils.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Provider
+import javax.inject.Singleton
 
 
 @InstallIn(SingletonComponent::class) // define the singleton Component used all over the app. This defines
@@ -19,7 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 // make this a module component
 @Module
-object HiltModule {
+class HiltModule() {
 
 
     /***
@@ -53,9 +59,35 @@ object HiltModule {
     }
 
     @Provides
-    fun permissionManager(): PermissionManager{
+    fun permissionManager(): PermissionManager {
         return PermissionManager()
     }
 
+    @Provides
+    @Singleton
+    fun provideContext(@ApplicationContext context : Context): Context {
+        return context.applicationContext
+    }
 
+    @Provides
+    fun interfacePopulation(listener: ISpeechToTextConvertListener)  : ISpeechToTextConvertListener{
+       return listener
+    }
+
+    @Provides
+    fun provideSpeechRecognizerManager(
+        @ApplicationContext context: Context
+    ): SpeechRecognizerManager {
+        return SpeechRecognizerManager.create(context)
+    }
+
+    @Provides
+    fun provideSpeechToTextConvertListener(): ISpeechToTextConvertListener {
+        // Return a no-op implementation or a factory
+        return object : ISpeechToTextConvertListener {
+            override fun speechToTextConverted(text: String) {
+                // No-op or default behavior
+            }
+        }
+    }
 }

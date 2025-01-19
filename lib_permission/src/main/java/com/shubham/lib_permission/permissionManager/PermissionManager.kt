@@ -136,7 +136,8 @@ class PermissionManager() {
     ) {
         val alertDialog = Dialog(context)
         val dialogBinding: ItemDialogPermissionBinding = ItemDialogPermissionBinding.inflate(
-            LayoutInflater.from(context) , null , false)
+            LayoutInflater.from(context), null, false
+        )
         alertDialog.setContentView(dialogBinding.root)
         alertDialog.setCancelable(false)
         val window = alertDialog.window
