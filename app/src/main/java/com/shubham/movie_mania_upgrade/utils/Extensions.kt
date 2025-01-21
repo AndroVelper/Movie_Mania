@@ -77,6 +77,10 @@ fun View.hideView() {
     this.visibility = View.GONE
 }
 
+fun View.makeInvisible() {
+    this.visibility = View.INVISIBLE
+}
+
 
 /**
  * This will be used to show the toast using the string prebuild class

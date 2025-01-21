@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="my_app_name">My App Name</string>
+    <string name="dummy_permission_text">We require this permission for the sound please provide this permission in the settings of the app. Once provided you can use this permission</string>
+    <string name="cancel">Cancel</string>
+    <string name="grant">ok</string>
+</resources>
