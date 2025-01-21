@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.shubham.lib_permission.permissionManager.PermissionManager
@@ -25,6 +26,7 @@ import com.shubham.movie_mania_upgrade.ui.MainViewModel
 import com.shubham.movie_mania_upgrade.ui.adapter.MovieAdapter
 import com.shubham.movie_mania_upgrade.utils.closeKeyBoard
 import com.shubham.movie_mania_upgrade.utils.hideView
+import com.shubham.movie_mania_upgrade.utils.makeInvisible
 import com.shubham.movie_mania_upgrade.utils.runOnBackgroundThread
 import com.shubham.movie_mania_upgrade.utils.showToast
 import com.shubham.movie_mania_upgrade.utils.showView
@@ -34,7 +36,7 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class MovieFragment : Fragment(), IItemClickListener  {
+class MovieFragment : Fragment(), IItemClickListener {
 
     private val binding: FragmentMovieBinding? by lazy {
         FragmentMovieBinding.inflate(layoutInflater)
@@ -54,15 +56,15 @@ class MovieFragment : Fragment(), IItemClickListener  {
 
 
     @Inject
-    lateinit var speechRecognizer : SpeechRecognizerManager
+    lateinit var speechRecognizer: SpeechRecognizerManager
 
 
     private val listener = object : ISpeechToTextConvertListener {
         override fun speechToTextConverted(text: String) {
-            if(text.trim().isEmpty()){
+            if (text.trim().isEmpty()) {
                 "Please speak again".showToast(requireContext())
             }
-            binding?.searchBar?.setQuery(text , true)
+            binding?.searchBar?.setQuery(text, true)
         }
     }
 
@@ -161,10 +163,21 @@ class MovieFragment : Fragment(), IItemClickListener  {
             })
 
 
-            viewModel.list.observe(viewLifecycleOwner) {
-                moviePageAdapter.submitData(lifecycle, it)
+            viewModel.list.observe(viewLifecycleOwner) { ref ->
+                moviePageAdapter.submitData(lifecycle, ref)
             }
 
+            moviePageAdapter.addLoadStateListener { loadState ->
+                // Check if refresh is done loading and itemCount is 0
+                val isEmptyList = loadState.refresh is LoadState.NotLoading && moviePageAdapter.itemCount == 0
+                if (isEmptyList) {
+                    movieRecycler.makeInvisible()
+                    noDataFound.showView()
+                }else{
+                    movieRecycler.showView()
+                    noDataFound.hideView()
+                }
+            }
             viewModel.movieDetails.observe(viewLifecycleOwner) { states ->
                 progressBar.hideView()
                 when (states) {
@@ -194,7 +207,6 @@ class MovieFragment : Fragment(), IItemClickListener  {
             viewModel.getTheMovieDetails(data.imdbID)
         }
     }
-
 
 
 }
